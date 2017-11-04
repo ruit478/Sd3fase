@@ -9,18 +9,18 @@ OBJ_DIR = object
 BIN_DIR = binary
 CFLAGS = -g -Wall -I $(INC_DIR)
 
-all: $(OBJ_DIR)/table.o $(OBJ_DIR)/entry.o $(OBJ_DIR)/data.o $(OBJ_DIR)/message.o $(OBJ_DIR)/test_data.o $(OBJ_DIR)/test_entry.o $(OBJ_DIR)/test_table.o $(OBJ_DIR)/test_message.o $(OBJ_DIR)/network_client.o $(OBJ_DIR)/table-client.o $(OBJ_DIR)/table-server.o $(BIN_DIR)/table-client $(BIN_DIR)/table-server $(BIN_DIR)/test_data $(BIN_DIR)/test_entry $(BIN_DIR)/test_table $(BIN_DIR)/test_message
+all: $(OBJ_DIR)/table.o $(OBJ_DIR)/entry.o $(OBJ_DIR)/data.o $(OBJ_DIR)/message.o $(OBJ_DIR)/test_data.o $(OBJ_DIR)/test_entry.o $(OBJ_DIR)/test_table.o $(OBJ_DIR)/test_message.o $(OBJ_DIR)/network_client.o $(OBJ_DIR)/table-client.o $(OBJ_DIR)/table-server.o $(OBJ_DIR)/client_stub.o $(OBJ_DIR)/table_skel.o $(BIN_DIR)/table-client $(BIN_DIR)/table-server $(BIN_DIR)/test_data $(BIN_DIR)/test_entry $(BIN_DIR)/test_table $(BIN_DIR)/test_message
 
 # Compilar Objetos----------------------------------------------
 
 $(OBJ_DIR)/data.o: $(SRC_DIR)/data.c $(INC_DIR)/data.h
 				$(CC) $(CFLAGS) -c $(SRC_DIR)/data.c -o $(OBJ_DIR)/data.o
 
-$(OBJ_DIR)/table.o: $(SRC_DIR)/table.c $(INC_DIR)/table-private.h
-				 $(CC) $(CFLAGS) -c $(SRC_DIR)/table.c -o $(OBJ_DIR)/table.o
-
 $(OBJ_DIR)/entry.o: $(SRC_DIR)/entry.c $(INC_DIR)/entry.h
 				$(CC) $(CFLAGS) -c $(SRC_DIR)/entry.c -o $(OBJ_DIR)/entry.o
+
+$(OBJ_DIR)/table.o: $(SRC_DIR)/table.c $(INC_DIR)/table-private.h
+				 $(CC) $(CFLAGS) -c $(SRC_DIR)/table.c -o $(OBJ_DIR)/table.o
 
 $(OBJ_DIR)/message.o: $(SRC_DIR)/message.c $(INC_DIR)/message.h
 				$(CC) $(CFLAGS) -c $(SRC_DIR)/message.c -o $(OBJ_DIR)/message.o
@@ -36,16 +36,22 @@ $(OBJ_DIR)/test_table.o: $(INC_DIR)/table.h $(INC_DIR)/table-private.h $(INC_DIR
 
 $(OBJ_DIR)/test_message.o: $(INC_DIR)/message.h $(INC_DIR)/table.h $(INC_DIR)/table-private.h $(INC_DIR)/entry.h $(INC_DIR)/data.h
 					$(CC) $(CFLAGS) -c $(SRC_DIR)/test_message.c -o $(OBJ_DIR)/test_message.o
+
 $(OBJ_DIR)/network_client.o:$(INC_DIR)/network_client-private.h $(INC_DIR)/network_client.h $(INC_DIR)/message-private.h $(INC_DIR)/message.h $(INC_DIR)/table-private.h $(INC_DIR)/table.h $(INC_DIR)/data.h
 					$(CC) $(CFLAGS) -c $(SRC_DIR)/network_client.c -o $(OBJ_DIR)/network_client.o
+
+$(OBJ_DIR)/client_stub.o:$(INC_DIR)/client_stub.h $(INC_DIR)/data.h
+					$(CC) $(CFLAGS) -c $(SRC_DIR)/client_stub.c -o $(OBJ_DIR)/client_stub.o
+
+$(OBJ_DIR)/table_skel.o:
+					$(CC) $(CFLAGS) -c $(SRC_DIR)/table_skel.c -o $(OBJ_DIR)/table_skel.o
+
 $(OBJ_DIR)/table-client.o:$(INC_DIR)/network_client-private.h $(INC_DIR)/network_client.h $(INC_DIR)/message-private.h $(INC_DIR)/message.h $(INC_DIR)/table-private.h $(INC_DIR)/table.h $(INC_DIR)/data.h
 					$(CC) $(CFLAGS) -c $(SRC_DIR)/table-client.c -o $(OBJ_DIR)/table-client.o
+
 $(OBJ_DIR)/table-server.o:$(INC_DIR)/inet.h $(INC_DIR)/network_client-private.h $(INC_DIR)/network_client.h $(INC_DIR)/message-private.h $(INC_DIR)/message.h $(INC_DIR)/table-private.h $(INC_DIR)/table.h $(INC_DIR)/data.h
 					$(CC) $(CFLAGS) -c $(SRC_DIR)/table-server.c -o $(OBJ_DIR)/table-server.o
-$(OBJ_DIR)/client_stub.o:$(INC_DIR)/client_stub.h $(INC_DIR)/data.h
-                    $(CC) $(CFLAGS) -c $(SRC_DIR)/client_stub.c -o $(OBJ_DIR)/client_stub.o
-$(OBJ_DIR)/table_skel.o:
-                    $(CC) $(CFLAGS) -c $(SRC_DIR)/table_skel.c -o $(OBJ_DIR)/table_skel.o
+
 # Compilar Testes ----------------------------------------------
 
 $(BIN_DIR)/test_data:
