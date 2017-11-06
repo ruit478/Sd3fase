@@ -7,6 +7,7 @@
 
 #include "inet.h"
 #include "network_client.h"
+#define rTime 3 //Tempo de retry
 
 struct server_t{
 	/* Atributos importantes para interagir com o servidor, */
@@ -26,5 +27,8 @@ int write_all(int sock, char *buf, int len);
    armazenando-os em buf.
 */
 int read_all(int sock, char *buf, int len);
-
+/*
+Tenta restablecer a ligacao
+*/
+int reconnect(struct rtable_t * tables);
 #endif
