@@ -143,6 +143,10 @@ int main(int argc, char **argv) {
       msg_out->opcode = OC_COLLS;
       msg_out->c_type = CT_RESULT;
   }
+    else if(strcmp(option, "ntables") == 0){
+      msg_out->opcode = OC_NTABLES;
+      msg_out->c_type = CT_RESULT;
+    }
 
     else {
       printf("Essa opção não existe");
@@ -205,6 +209,11 @@ int main(int argc, char **argv) {
       if(msg_resposta->opcode == OC_COLLS + 1){
         printf("\nOperacao collisions feita com sucesso!\n");
         printf("O numero de colisoes na tabela eh: %d\n\n" , msg_resposta->content.result);
+      }
+
+      if(msg_resposta->opcode == OC_NTABLES +1){
+        printf("\nOperacao ntables feita com sucesso!\n");
+        printf("O numero de tabelas eh: %d\n\n" , msg_resposta->content.result);
       }
 
     split2 = NULL;

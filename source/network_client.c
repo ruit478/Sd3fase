@@ -218,13 +218,13 @@ int reconnect(struct rtable_t *tables){
   sleep(rTime);
   close(table->server->id);
 
-  if ((table->server->id = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+  if ((tables->server->id = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
     return -1;
   }
 
   // Estabelece conexão com o servidor definido em server
-  if (connect(table->server->id,(struct sockaddr *)&table->server->server_data, sizeof(table->server->server_data)) < 0) {
-    close(table->server->id);
+  if (connect(tables->server->id,(struct sockaddr *)&tables->server->server_data, sizeof(tables->server->server_data)) < 0) {
+    close(tables->server->id);
     return -1;
   }
 
