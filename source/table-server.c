@@ -140,11 +140,6 @@ struct message_t *process_message(struct message_t *msg_pedido, struct table_t *
 		msg_resposta->content.result = tabela->colls;
 		msg_resposta->opcode = OC_COLLS +1;
 		break;
-
-		case OC_NTABLES:
-		msg_resposta->c_type = CT_RESULT;
-		msg_resposta->content.result = //ATRIBUTO WTV QUE QUERES GUARDAR
-		msg_resposta->opcode = OC_NTABLES;
 	}
 
 	/* Preparar mensagem de resposta */
