@@ -145,29 +145,32 @@ int main(int argc, char **argv) {
         printf("Nr inválido de argumentos");
       }
       struct data_t *dados = data_create2(strlen(split4), split4);
-
-      msg_out->table_num = (short)atoi(split2);
-      msg_out->opcode = OC_UPDATE;
-      msg_out->c_type = CT_ENTRY;
-      msg_out->content.entry = (struct entry_t*) malloc(sizeof(struct entry_t));
-      if(msg_out->content.entry == NULL){
-        free_message(msg_out);
-        data_destroy(dados);
-        return -1;
-      }
-      msg_out->content.entry->key = strdup(split3);
-      msg_out->content.entry->value = data_dup(dados);
-
+      reply = rtable_update(rtable,split3,split4);
       data_destroy(dados);
+      if (reply == -2)
+        printf("\nO servidor não se encontra disponivel. Saia da aplicacao usando o comando \"quit\"\n");
+
+      else if (reply == -1)
+        printf("\nOcorreu um erro no lado do servidor, tente novamente!\n");
+  
+      else {
+        printf("\nAtualizacao da chave \"%s\" com a data \"%s\"\n", split3, split4);
+        printf("Pode conferir com o comando get!\n");
+
+      }
     }
 
     else if (strcmp(option, "size") == 0) {
-      if (split2 == NULL) {
-        printf("Nr inválido de argumentos");
-      }
-      msg_out->table_num = (short)atoi(split2);
-      msg_out->opcode = OC_SIZE;
-      msg_out->c_type = CT_RESULT;
+      reply = rtable_size(rtable);
+
+      if (reply == -2)
+        printf("\nO servidor não se encontra disponivel. Saia da aplicacao usando o comando \"quit\"\n");
+
+      else if (reply == -1)
+        printf("\nOcorreu um erro no lado do servidor, tente novamente!\n");
+  
+      else
+        printf("\nA tabela tem %d elemento(s)!\n", reply);
     }
 
     else if (strcmp(option, "collisions") == 0) {
