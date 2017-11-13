@@ -12,7 +12,6 @@ struct table_t{
 	int nrElems;
 	int maxSize;
 	int colls;
-	int nrTabelas;
 };
 
 int hash(char* key, int size);

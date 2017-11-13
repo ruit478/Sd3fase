@@ -19,7 +19,7 @@
 #include "network_client-private.h"
 #include "table_skel.h"
 #define MAX_C 4
-#define TIME 50
+#define TIME -1
 /* Função para preparar uma socket de receção de pedidos de ligação.
 */
 int make_server_socket(short port){
@@ -36,7 +36,7 @@ int make_server_socket(short port){
   server.sin_addr.s_addr = htonl(INADDR_ANY);
 
   int so_reuseaddr = 1;
-  setsockopt(socket_fd,SOL_SOCKET,SO_REUSEADDR, &so_reuseaddr, sizeof so_reuseaddr);
+  setsockopt(socket_fd,SOL_SOCKET,SO_REUSEADDR, &so_reuseaddr, sizeof (so_reuseaddr));
 
   if (bind(socket_fd, (struct sockaddr *) &server, sizeof(server)) < 0){
       perror("Erro ao fazer bind");
@@ -245,6 +245,7 @@ int main(int argc, char **argv){
 	printf("Exemplo de uso: ./table-server 54321 10 15 20 25\n");
 	return -1;
 	}
+	struct pollfd *poll_list = NULL;
 	size_client = sizeof(struct sockaddr_in);
 	if ((listening_socket = make_server_socket(atoi(argv[1]))) < 0) return -1;
 
@@ -253,9 +254,13 @@ int main(int argc, char **argv){
 	/*********************************************************/
 	//Copiar do argc o nr de tabelas
 	char **n_tables = (char **) malloc(sizeof(char*) * argc-2);
-	for(int ts; ts < argc-2;ts++){
-		n_tables[ts] = strdup(argv[ts]);
+	int ts;
+	int index = 0;
+	for(ts = 2; ts < argc;ts++){
+		n_tables[index] = strdup(argv[ts]);
+		index++;
 	}
+	n_tables[index+1] = NULL;
 
 	if(table_skel_init(n_tables) == -1){
 		perror("Erro ao criar tabela");
@@ -264,18 +269,18 @@ int main(int argc, char **argv){
 	}
 	int totalConnections = MAX_C + 2;
 
-	struct pollfd *poll_list = (struct pollfd*) malloc(sizeof(struct pollfd) * totalConnections);
+	poll_list = (struct pollfd*) malloc(sizeof(struct pollfd) * totalConnections);
 	
 	for(int i = 0; i < totalConnections; i++){
 		poll_list[i].fd = -1;
-		poll_list[i].fd = POLLIN;
+		poll_list[i].events = POLLIN;
 	}
 	poll_list[0].fd = listening_socket; // Socket de escuta toma o 1 lugar da lista
 
 	printf("Servidor operacional!\n");
 
 	while(server_error == 0){
-		int resultado = poll(poll_list, MAX_C, TIME);
+		int resultado = poll(poll_list, totalConnections, TIME);
 		if(resultado < 0){
 			if(errno != EINTR)
 				server_error = 1;
