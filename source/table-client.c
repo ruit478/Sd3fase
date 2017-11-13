@@ -12,10 +12,10 @@
 */
 
 #include "network_client-private.h"
+#include "client_stub-private.h"
 int main(int argc, char **argv) {
-  struct server_t *server;
   char input[81];
-  struct message_t *msg_out, *msg_resposta;
+  int reply;
   char *option;
   char *split2;
   char *split3;
@@ -26,8 +26,12 @@ int main(int argc, char **argv) {
     printf("Uso: ./client 127.0.0.1:5000 ");
     return -1;
   }
-  /* Usar network_connect para estabelcer ligação ao servidor */
-  server = network_connect(argv[1]);
+  struct rtable_t* rtable = rtable_bind(argv[1]);
+
+  if (rtable == NULL) {
+    printf("Nao tem condicoes para criar o cliente\n");
+    return -1;
+  } 
 
   /* Fazer ciclo até que o utilizador resolva fazer "quit" */
   while (1) {
@@ -67,39 +71,70 @@ int main(int argc, char **argv) {
     */
     /////////////////////Put///////////////////
     if (strcmp(option, "put") == 0) {
+      rtable->activeTable = split2;
       split3 = strtok(NULL, " ");      // Key
       split4 = strtok(NULL, "\0");     // data
       if (split2 == NULL || split3 == NULL || split4 == NULL) {
         printf("Nr inválido de argumentos");
       }
       struct data_t *dados = data_create2(strlen(split4), split4);
+      reply = rtable_put(rtable,split3,dados);
+      data_destroy(dados); 
 
-      msg_out->table_num = (short) atoi(split2);
-      msg_out->opcode = OC_PUT;
-      msg_out->c_type = CT_ENTRY;
-      msg_out->content.entry = (struct entry_t*) malloc(sizeof(struct entry_t));
-      if(msg_out->content.entry == NULL){
-        free_message(msg_out);
-        data_destroy(dados);
-        return -1;
-      }
-      msg_out->content.entry->key = strdup(split3);
-      msg_out->content.entry->value = data_dup(dados);
+      if (reply == -2)
+        printf("\nO servidor não se encontra disponivel. Saia da aplicacao usando o comando \"quit\"\n");
 
-      data_destroy(dados);
+      else if (reply == -1)
+        printf("\nOcorreu um erro no lado do servidor, tente novamente!\n");
+  
+      else
+        printf("\nInseriu a chave \"%s\" com a data \"%s\"\n", second, third);
+
     }
 
     else if (strcmp(option, "get") == 0) {
+      rtable->activeTable = split2;
       split3 = strtok(NULL, "\0");
 
+      int k = 0;
+      char**keys;
+      struct data_t *dados;
       if (split2 == NULL || split3 == NULL) {
         printf("Nr Inválido de argumentos");
       }
+      if(strcmp(split3, "*") == 0){
+        keys = rtable_get_keys(rtable);
 
-      msg_out->table_num = (short)atoi(split2);
-      msg_out->opcode = OC_GET;
-      msg_out->c_type = CT_KEY;
-      msg_out->content.key = strdup(split3);
+        if (keys == NULL) {
+          printf("\nErro do Lado do servidor / Nao ha chaves\n");
+        }
+
+        else {
+          printf("As Chaves sao: ");
+          while (keys[k] != NULL) {
+            printf("%s " , keys[k]);
+            k++;
+          }
+
+        printf("\n");
+
+        rtable_free_keys(keys);
+
+        }
+      }
+      else{
+        dados = rtable_get(rtable,split3);
+        if(dados == NULL)
+          printf("\nErro do Lado do servidor / Nao ha chave\n");    
+
+        else {
+          char* print_data = malloc (dados->datasize);
+          memcpy(print_data,dados->data,dados->datasize); 
+          print_data[dados->datasize] = '\0';
+          printf("\nA Data dessa key eh : %s\n\n", print_data);
+          free(print_data);
+        }
+      }
     }
 
     else if (strcmp(option, "update") == 0) {
