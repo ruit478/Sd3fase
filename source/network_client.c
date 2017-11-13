@@ -214,9 +214,9 @@ int network_close(struct server_t *server) {
 	return 0;
 }
 
-int reconnect(struct rtable_t *tables){
+int reconnect(struct rtables_t *tables){
   sleep(rTime);
-  close(table->server->id);
+  close(tables->server->id);
 
   if ((tables->server->id = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
     return -1;

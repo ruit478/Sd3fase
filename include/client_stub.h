@@ -35,7 +35,7 @@ int rables_update(struct rtables_t *rtables, char *key, struct data_t *value);
 /* Função para obter da tabela remota o valor associado à chave key.
  * Devolve NULL em caso de erro.
  */
-struct data_t *rtables_get(struct rtables_t *tables, char *key);
+struct data_t *rtables_get(struct rtables_t *rtables, char *key);
 
 /* Devolve número de pares chave/valor na tabela remota.
  */

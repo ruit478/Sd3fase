@@ -1,14 +1,21 @@
-#include "client_stub.h"
+#include <poll.h>
+#include <error.h>
+#include <errno.h>
+#include <unistd.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "client_stub-private.h"
-#include "network_client.h"
+#include "network_client-private.h"
 
 struct rtables_t *rtables_bind(const char *address_port) {
   struct server_t *server = network_connect(address_port);
 
   if (server == NULL) {
-    return NULL
+    return NULL;
   }
-  struct rtable_t *rtables = (struct rtable_t *)malloc(sizeof(struct rtable_t));
+  struct rtables_t *rtables = (struct rtables_t *)malloc(sizeof(struct rtables_t));
   if (rtables == NULL) {
     return NULL;
   }
@@ -19,10 +26,10 @@ struct rtables_t *rtables_bind(const char *address_port) {
 }
 
 int rtables_unbind(struct rtables_t *rtables) {
-  int result = network_close(rtable->server);
+  int result = network_close(rtables->server);
   if (result == -1) return result;
 
-  free(rtrables->address_port);
+  free(rtables->address_port);
   free(rtables);
   return result;
 }
@@ -104,7 +111,7 @@ int rables_update(struct rtables_t *rtables, char *key, struct data_t *value) {
       return -2;
     } 
     else
-      msg_resposta = network_send_receive(rtables->server, message)
+      msg_resposta = network_send_receive(rtables->server, message);
   
   }
 
@@ -123,7 +130,7 @@ int rables_update(struct rtables_t *rtables, char *key, struct data_t *value) {
   return result;
   }
 
-  struct data_t *rtables_get(struct rtables_t * tables, char *key) {
+  struct data_t *rtables_get(struct rtables_t *rtables, char *key) {
   	if (rtables == NULL || key == NULL) {
     return -1;
   }
@@ -147,7 +154,7 @@ int rables_update(struct rtables_t *rtables, char *key, struct data_t *value) {
       return -2;
     } 
     else
-      msg_resposta = network_send_receive(rtables->server, message)
+      msg_resposta = network_send_receive(rtables->server, message);
   
   }
 
@@ -177,7 +184,7 @@ int rables_update(struct rtables_t *rtables, char *key, struct data_t *value) {
       free_message(msg_resposta);
       return NULL;
 }
-  int rtables_size(struct rtables_t * rtables) {
+  int rtables_size(struct rtables_t *rtables) {
     return rtables->nrTables;
   }
 
@@ -204,7 +211,7 @@ int rables_update(struct rtables_t *rtables, char *key, struct data_t *value) {
       return -2;
     } 
     else
-      msg_resposta = network_send_receive(rtables->server, message)
+      msg_resposta = network_send_receive(rtables->server, message);
   
   }
 
@@ -223,7 +230,7 @@ int rables_update(struct rtables_t *rtables, char *key, struct data_t *value) {
       }
       else{
         int j = 0;
-        char **aux = (char**) malloc (sizeof(char*) * (rtable_size(rtable)+1));
+        char **aux = (char**) malloc (sizeof(char*) * (rtables_size(rtables)+1));
 
         if (aux == NULL) {
           free_message(message);
@@ -235,7 +242,7 @@ int rables_update(struct rtables_t *rtables, char *key, struct data_t *value) {
           j++;
         }
 
-        aux[j] == NULL;
+        aux[j] = NULL;
 
         free_message(message);
         free_message(msg_resposta);

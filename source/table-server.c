@@ -7,12 +7,19 @@
    Uso: table-server <port> <table1_size> [<table2_size> ...]
    Exemplo de uso: ./table_server 5000 10 15 20 25
 */
+#include <poll.h>
 #include <error.h>
+#include <errno.h>
+#include <unistd.h>
+#include <signal.h>
+
 #include "inet.h"
 #include "table-private.h"
 #include "message-private.h"
 #include "network_client-private.h"
-
+#include "table_skel.h"
+#define MAX_C 4
+#define TIME 50
 /* Função para preparar uma socket de receção de pedidos de ligação.
 */
 int make_server_socket(short port){
@@ -27,6 +34,9 @@ int make_server_socket(short port){
   server.sin_family = AF_INET;
   server.sin_port = htons(port);
   server.sin_addr.s_addr = htonl(INADDR_ANY);
+
+  int so_reuseaddr = 1;
+  setsockopt(socket_fd,SOL_SOCKET,SO_REUSEADDR, &so_reuseaddr, sizeof so_reuseaddr);
 
   if (bind(socket_fd, (struct sockaddr *) &server, sizeof(server)) < 0){
       perror("Erro ao fazer bind");
@@ -155,13 +165,13 @@ struct message_t *process_message(struct message_t *msg_pedido, struct table_t *
 	Aplica o pedido na tabela;
 	Envia a resposta.
 */
-int network_receive_send(int sockfd, struct table_t *tables){
+int network_receive_send(int sockfd){
   char *message_resposta, *message_pedido;
   int message_size, msg_size, result; //message -> recebe do client, msg->dá ao client
   struct message_t *msg_pedido, *msg_resposta;
 
 	/* Verificar parâmetros de entrada */
-  if(sockfd < 0 || tables== NULL){
+  if(sockfd < 0){
   	return -1;
   }
 	/* Com a função read_all, receber num inteiro o tamanho da
@@ -189,7 +199,7 @@ int network_receive_send(int sockfd, struct table_t *tables){
 		return -1;
 	/* Processar a mensagem */
 
-	msg_resposta = process_message(msg_pedido, &tables[msg_pedido->table_num-1]);
+	msg_resposta = invoke(msg_pedido);
 	print_message(msg_resposta);
 	/* Serializar a mensagem recebida */
 	message_size = message_to_buffer(msg_resposta, &message_resposta); //Problema aqui, server manda a resposta
@@ -225,49 +235,94 @@ int network_receive_send(int sockfd, struct table_t *tables){
 }
 
 int main(int argc, char **argv){
-	int listening_socket, connsock, result;
+	int listening_socket, connsock;
 	struct sockaddr_in client;
 	socklen_t size_client;
-	struct table_t *tables;
+	int server_error = 0;
 
 	if (argc < 3){
 	printf("Uso: ./server <porta TCP> <table1_size> [<table2_size> ...]\n");
 	printf("Exemplo de uso: ./table-server 54321 10 15 20 25\n");
 	return -1;
 	}
-
+	size_client = sizeof(struct sockaddr_in);
+	if ((listening_socket = make_server_socket(atoi(argv[1]))) < 0) return -1;
 
 	/*********************************************************/
 	/* Criar as tabelas de acordo com linha de comandos dada */
 	/*********************************************************/
-	int index = 0;
-	tables = (struct table_t*) malloc(sizeof(struct table_t) * (argc-2));
-
-	for(int i = 2; i<argc ;i++){
-		tables[index] = *table_create(atoi(argv[i]));
-		index++;
+	//Copiar do argc o nr de tabelas
+	char **n_tables = (char **) malloc(sizeof(char*) * argc-2);
+	for(int ts; ts < argc-2;ts++){
+		n_tables[ts] = strdup(argv[ts]);
 	}
 
-	size_client = sizeof(struct sockaddr_in);
+	if(table_skel_init(n_tables) == -1){
+		perror("Erro ao criar tabela");
+		close(listening_socket);
+		return -1;
+	}
+	int totalConnections = MAX_C + 2;
 
-	if ((listening_socket = make_server_socket(atoi(argv[1]))) < 0) return -1;
+	struct pollfd *poll_list = (struct pollfd*) malloc(sizeof(struct pollfd) * totalConnections);
+	
+	for(int i = 0; i < totalConnections; i++){
+		poll_list[i].fd = -1;
+		poll_list[i].fd = POLLIN;
+	}
+	poll_list[0].fd = listening_socket; // Socket de escuta toma o 1 lugar da lista
 
+	printf("Servidor operacional!\n");
 
-	while ((connsock = accept(listening_socket, (struct sockaddr *) &client, &size_client)) != -1) {
-		printf(" * Client is connected!\n");
+	while(server_error == 0){
+		int resultado = poll(poll_list, MAX_C, TIME);
+		if(resultado < 0){
+			if(errno != EINTR)
+				server_error = 1;
+			continue;
+		}
 
-		while (1){
+		if(poll_list[0].revents && POLLIN){ //Tem pedidos para ler(Socket de escuta)
 
-			/* Fazer ciclo de pedido e resposta */
-			if((result = network_receive_send(connsock, tables)) < 0){
-				close(connsock);
-				break;
+			//Nova ligacao
+			if((connsock = accept(poll_list[0].fd, (struct sockaddr *) &client, &size_client)) != -1){
+				int j = 1;
+				//Encontrar a posicao onde adicionar
+				while(j < MAX_C && poll_list[j].fd != -1)
+					j++;
+
+				if(j < MAX_C){
+					printf("\nCliente %d ligou-se!\n", j);
+					poll_list[j].fd = connsock;
+					poll_list[j].events = POLLIN;
+
+				}
+			}
+		}
+		//para cada socket cliente
+		for(int k = 1; k < totalConnections; k++){
+			if(poll_list[k].revents & POLLIN){
+				int conn = network_receive_send(poll_list[k].fd);
+				if(conn == -2 || conn == -1){
+					printf("Cliente %d saiu!\n" , k);
+					close(poll_list[k].fd);
+					poll_list[k].fd = -1;
+				}
 			}
 
-			/* Ciclo feito com sucesso ? Houve erro?
-			   Cliente desligou? */
-
+		if(poll_list[k].fd != -1 && poll_list[k].revents & POLLHUP){
+			printf("Cliente %d saiu!\n" , k);
+			close(poll_list[k].fd);
+			poll_list[k].fd = -1;
+			}
 		}
 	}
+	table_skel_destroy();
+
+	for(int t = 0; t< totalConnections; t++){
+		if(poll_list[t].fd != -1)
+			close(poll_list[t].fd);
+	}
+	printf("Tudo limpo, servidor a terminar\n");
 	return 0;
 }

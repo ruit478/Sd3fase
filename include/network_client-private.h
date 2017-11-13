@@ -7,6 +7,7 @@
 
 #include "inet.h"
 #include "network_client.h"
+#include "client_stub-private.h"
 #define rTime 3 //Tempo de retry
 
 struct server_t{
@@ -30,5 +31,5 @@ int read_all(int sock, char *buf, int len);
 /*
 Tenta restablecer a ligacao
 */
-int reconnect(struct rtable_t * tables);
+int reconnect(struct rtables_t *tables);
 #endif

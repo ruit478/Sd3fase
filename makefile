@@ -40,7 +40,7 @@ $(OBJ_DIR)/test_message.o: $(INC_DIR)/message.h $(INC_DIR)/table.h $(INC_DIR)/ta
 $(OBJ_DIR)/network_client.o:$(INC_DIR)/network_client-private.h $(INC_DIR)/network_client.h $(INC_DIR)/message-private.h $(INC_DIR)/message.h $(INC_DIR)/table-private.h $(INC_DIR)/table.h $(INC_DIR)/data.h
 					$(CC) $(CFLAGS) -c $(SRC_DIR)/network_client.c -o $(OBJ_DIR)/network_client.o
 
-$(OBJ_DIR)/client_stub.o:$(INC_DIR)/client_stub.h $(INC_DIR)/data.h
+$(OBJ_DIR)/client_stub.o:$(INC_DIR)/client_stub-private.h $(INC_DIR)/client_stub.h $(INC_DIR)/data.h
 					$(CC) $(CFLAGS) -c $(SRC_DIR)/client_stub.c -o $(OBJ_DIR)/client_stub.o
 
 $(OBJ_DIR)/table_skel.o:
