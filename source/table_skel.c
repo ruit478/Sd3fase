@@ -76,7 +76,7 @@ struct message_t *invoke(struct message_t *msg_in){
 		msg_resposta->opcode = OC_GET;
 		if(strcmp(msg_in->content.key,"*") == 0){
 			msg_resposta->c_type = CT_KEYS;
-			msg_resposta->content.keys = table_get_keys(tables);
+			msg_resposta->content.keys = table_get_keys(&tables[msg_in->table_num]);
 			msg_resposta->opcode = msg_resposta->opcode + 1;
 		}
 		//Caso de só querer 1 key
