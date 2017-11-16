@@ -5,18 +5,18 @@
 #ifndef _NETWORK_CLIENT_PRIVATE_H
 #define _NETWORK_CLIENT_PRIVATE_H
 
+#include "client_stub-private.h"
 #include "inet.h"
 #include "network_client.h"
-#include "client_stub-private.h"
-#define rTime 3 //Tempo de retry
+#define rTime 3 // Tempo de retry
 
-struct server_t{
-	/* Atributos importantes para interagir com o servidor, */
-	/* tanto antes da ligação estabelecida, como depois.    */
-	char * hostname;
-	int port;
-	int id; //id do socket
-	struct sockaddr_in server_data;
+struct server_t {
+  /* Atributos importantes para interagir com o servidor, */
+  /* tanto antes da ligação estabelecida, como depois.    */
+  char *hostname;
+  int port;
+  int id; // id do socket
+  struct sockaddr_in server_data;
 };
 
 /* Função que garante o envio de len bytes armazenados em buf,

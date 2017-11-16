@@ -7,13 +7,13 @@
 
 #include "table.h"
 
-struct table_t{
-	struct entry_t *entries;
-	int nrElems;
-	int maxSize;
-	int colls;
+struct table_t {
+  struct entry_t *entries;
+  int nrElems;
+  int maxSize;
+  int colls;
 };
 
-int hash(char* key, int size);
+int hash(char *key, int size);
 
 #endif

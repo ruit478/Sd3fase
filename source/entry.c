@@ -14,7 +14,8 @@
  */
 void entry_initialize(struct entry_t *entry) {
 
-  if(entry == NULL) return;
+  if (entry == NULL)
+    return;
 
   entry->key = NULL;
   entry->value = NULL;
@@ -24,18 +25,19 @@ void entry_initialize(struct entry_t *entry) {
 /* Função que duplica um par {chave, valor}. */
 struct entry_t *entry_dup(struct entry_t *entry) {
 
-  if(entry == NULL || entry->key == NULL || entry->value == NULL) return NULL;
+  if (entry == NULL || entry->key == NULL || entry->value == NULL)
+    return NULL;
 
-  struct entry_t *temp = (struct entry_t *) malloc(sizeof(struct entry_t));
+  struct entry_t *temp = (struct entry_t *)malloc(sizeof(struct entry_t));
 
-  if (temp == NULL){
+  if (temp == NULL) {
     free(temp);
     return NULL;
   }
 
   temp->key = strdup(entry->key);
   temp->value = data_dup(entry->value);
-  memcpy(&(temp->next),&(entry->next),sizeof(temp->next));
+  memcpy(&(temp->next), &(entry->next), sizeof(temp->next));
 
   return temp;
 }

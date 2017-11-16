@@ -1,5 +1,5 @@
 ﻿/*
-	  Grupo 07
+          Grupo 07
    Rui Lopes 47900
    Rui Teixeira 47889
    João Miranda 48666
@@ -8,7 +8,6 @@
 #define _TABLE_H
 
 #include "entry.h"
-
 
 struct table_t; /* A definir pelo grupo em table-private.h */
 

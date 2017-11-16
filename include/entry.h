@@ -10,9 +10,9 @@
 /* Esta estrutura define o par {chave, valor} para a tabela
  */
 struct entry_t {
-	char *key;	/* string, (char* terminado por '\0') */
-	struct data_t *value; /* Bloco de dados */
-	struct entry_t *next; /* Resolução de colisões */
+  char *key;            /* string, (char* terminado por '\0') */
+  struct data_t *value; /* Bloco de dados */
+  struct entry_t *next; /* Resolução de colisões */
 };
 
 /* Função que inicializa os membros de uma entrada na tabela com

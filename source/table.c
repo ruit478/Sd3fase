@@ -6,19 +6,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "table.h"
 #include "table-private.h"
+#include "table.h"
 
 /* Função para criar/inicializar uma nova tabela hash, com n
  * linhas(n = módulo da função hash)
  */
 struct table_t *table_create(int n) {
 
-  if (n <= 0) return NULL;
+  if (n <= 0)
+    return NULL;
 
   struct table_t *table = (struct table_t *)malloc(sizeof(struct table_t));
 
-  if (table == NULL){
+  if (table == NULL) {
     free(table);
     return NULL;
   }
@@ -27,7 +28,7 @@ struct table_t *table_create(int n) {
   table->maxSize = n;
   table->entries = (struct entry_t *)malloc(n * sizeof(struct entry_t));
 
-  if (table->entries == NULL){
+  if (table->entries == NULL) {
     free(table);
     return NULL;
   }
@@ -43,7 +44,8 @@ struct table_t *table_create(int n) {
  */
 void table_destroy(struct table_t *table) {
 
-  if (table == NULL) return;
+  if (table == NULL)
+    return;
 
   if (table->maxSize <= 0) {
     free(table);
@@ -66,12 +68,14 @@ void table_destroy(struct table_t *table) {
  */
 int table_put(struct table_t *table, char *key, struct data_t *value) {
 
-  if (table == NULL || key == NULL || value == NULL) return -1;
+  if (table == NULL || key == NULL || value == NULL)
+    return -1;
 
   int index = hash(key, table->maxSize);
   struct entry_t *curr = &(table->entries[index]);
 
-  if (table->nrElems == table->maxSize) return -1;
+  if (table->nrElems == table->maxSize)
+    return -1;
 
   if (curr->key == NULL) {
     curr->key = strdup(key);
@@ -81,13 +85,15 @@ int table_put(struct table_t *table, char *key, struct data_t *value) {
   }
 
   while (curr->next != NULL) {
-    if (strcmp(curr->key, key) == 0) return -1;
+    if (strcmp(curr->key, key) == 0)
+      return -1;
     curr = curr->next;
   }
-  if (strcmp(curr->key, key) == 0) return -1;
+  if (strcmp(curr->key, key) == 0)
+    return -1;
 
   int i = table->maxSize - 1;
-  while(table->entries[i].key != NULL){
+  while (table->entries[i].key != NULL) {
     i--;
   }
 
@@ -105,7 +111,8 @@ int table_put(struct table_t *table, char *key, struct data_t *value) {
  */
 int table_update(struct table_t *table, char *key, struct data_t *value) {
 
-  if (table == NULL || key == NULL || value == NULL) return -1;
+  if (table == NULL || key == NULL || value == NULL)
+    return -1;
 
   int index = hash(key, table->maxSize);
   struct entry_t *curr = table->entries + index;
@@ -129,13 +136,15 @@ int table_update(struct table_t *table, char *key, struct data_t *value) {
  */
 struct data_t *table_get(struct table_t *table, char *key) {
 
-  if (key == NULL || table == NULL) return NULL;
+  if (key == NULL || table == NULL)
+    return NULL;
 
   int index = hash(key, table->maxSize);
-  struct entry_t *curr = table->entries + index ;
+  struct entry_t *curr = table->entries + index;
 
   while (curr->key != NULL) {
-    if (strcmp(curr->key, key) == 0) return data_dup(curr->value);
+    if (strcmp(curr->key, key) == 0)
+      return data_dup(curr->value);
     curr = curr->next;
   }
 
@@ -146,7 +155,8 @@ struct data_t *table_get(struct table_t *table, char *key) {
  */
 int table_size(struct table_t *table) {
 
-  if (table == NULL) return 0;
+  if (table == NULL)
+    return 0;
 
   return table->nrElems;
 }
@@ -156,7 +166,8 @@ int table_size(struct table_t *table) {
  */
 char **table_get_keys(struct table_t *table) {
 
-  if (table == NULL) return NULL;
+  if (table == NULL)
+    return NULL;
 
   char **allKeys = (char **)malloc(sizeof(char *) * (table->nrElems + 1));
 
@@ -165,15 +176,15 @@ char **table_get_keys(struct table_t *table) {
   }
 
   int temp = 0;
-  for(int i = 0; i < table->maxSize; i++){
-    if(table->entries[i].key != NULL){
+  for (int i = 0; i < table->maxSize; i++) {
+    if (table->entries[i].key != NULL) {
       allKeys[temp] = strdup(table->entries[i].key);
-      if(temp+1 != table->maxSize ){
+      if (temp + 1 != table->maxSize) {
         temp++;
       }
     }
   }
-  allKeys[temp+1] = NULL;
+  allKeys[temp + 1] = NULL;
 
   return allKeys;
 }

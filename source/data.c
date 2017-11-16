@@ -13,11 +13,12 @@
  */
 struct data_t *data_create(int size) {
 
-  if (size <= 0) return NULL;
+  if (size <= 0)
+    return NULL;
 
   struct data_t *temp = (struct data_t *)malloc(sizeof(struct data_t));
 
-  if (temp == NULL){
+  if (temp == NULL) {
     return NULL;
   }
 
@@ -37,13 +38,13 @@ struct data_t *data_create(int size) {
  */
 struct data_t *data_create2(int size, void *data) {
 
-  if(data == NULL || size <= 0){
-		return NULL;
-	}
+  if (data == NULL || size <= 0) {
+    return NULL;
+  }
 
   struct data_t *temp = data_create(size);
 
-  if (temp == NULL){
+  if (temp == NULL) {
     free(temp);
     return NULL;
   }
@@ -68,6 +69,7 @@ void data_destroy(struct data_t *data) {
  */
 struct data_t *data_dup(struct data_t *data) {
 
-  if(data == NULL) return NULL;
+  if (data == NULL)
+    return NULL;
   return data_create2(data->datasize, data->data);
 }

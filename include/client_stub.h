@@ -3,9 +3,9 @@
 
 #include "data.h"
 
-/* Remote table. A definir pelo grupo em client_stub-private.h 
+/* Remote table. A definir pelo grupo em client_stub-private.h
  */
-struct rtables_t; 
+struct rtables_t;
 
 /* Função para estabelecer uma associação entre o cliente e um conjunto de
  * tabelas remotas num servidor.
@@ -17,7 +17,7 @@ struct rtables_t;
 struct rtables_t *rtables_bind(const char *address_port);
 
 /* Termina a associação entre o cliente e um conjunto de tabelas remotas, e
- * liberta toda a memória local. 
+ * liberta toda a memória local.
  * Retorna 0 se tudo correr bem e -1 em caso de erro.
  */
 int rtables_unbind(struct rtables_t *rtables);
