@@ -141,7 +141,7 @@ int rables_update(struct rtables_t *rtables, char *key, struct data_t *value) {
     
     message->table_num = rtables->activeTable;
   	message->opcode = OC_GET;
-  	message->opcode = CT_KEY;
+  	message->c_type = CT_KEY;
   	message->content.key = strdup(key);
 
   	struct message_t *msg_resposta = network_send_receive(rtables->server, message);
@@ -186,6 +186,43 @@ int rables_update(struct rtables_t *rtables, char *key, struct data_t *value) {
 }
   int rtables_size(struct rtables_t *rtables) {
     return rtables->nrTables;
+  }
+
+  int rtables_collisions(struct rtables_t *rtables){
+    struct message_t *message = (struct message_t*) malloc(sizeof(struct message_t));
+    if(message == NULL)
+      return NULL;
+    message->table_num = rtables->activeTable;
+    message->opcode = OC_COLLS;
+    message->c_type = CT_RESULT;
+
+    struct message_t *msg_resposta = network_send_receive(rtables->server, message);
+    
+    if (msg_resposta == NULL) {
+    rc = reconnect(rtables);
+
+    if (rc == -1) {
+      free_message(message);
+      free_message(msg_resposta);
+      return -2;
+    } 
+    else
+      msg_resposta = network_send_receive(rtables->server, message);
+  
+  }
+
+    if(msg_resposta->opcode == OC_RT_ERROR){
+      free_message(message);
+      free_message(msg_resposta);
+      return NULL;
+    }
+
+    int colls = 0;
+    if(msg_resposta->opcode == OC_COLLS+1){
+      colls = msg_resposta.content->result;
+    }
+
+    return colls;
   }
 
   char **rtables_get_keys(struct rtables_t * rtables) {

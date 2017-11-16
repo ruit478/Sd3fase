@@ -1,16 +1,17 @@
+
 // Grupo 07
 // Rui Lopes 47900 Rui Teixeira 47889 João Miranda 48666
 //
 
 #include "network_client-private.h"
-#include<string.h>
-#include<stdio.h>
-#include<unistd.h>
-#include<netinet/in.h>
-#include<arpa/inet.h>
-#include<sys/types.h>
-#include<sys/socket.h>
-#include<stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <stdlib.h>
 #include <errno.h>
 
 void print_message(struct message_t *msg) {

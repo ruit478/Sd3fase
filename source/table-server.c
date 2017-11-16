@@ -304,6 +304,19 @@ int main(int argc, char **argv){
 				}
 			}
 		}
+		/*
+		//Para o STDIN
+		poll_list[1].fd = fileno(STDIN);
+		poll_list[1].events = POLLIN;
+		if(poll(poll_list, totalConnections,TIME) > 0){
+			if(poll_list[1].revents && POLLIN){
+
+			}
+		}
+	*/
+
+
+
 		//para cada socket cliente
 		for(int k = 1; k < totalConnections; k++){
 			if(poll_list[k].revents & POLLIN){
@@ -324,6 +337,7 @@ int main(int argc, char **argv){
 	}
 	table_skel_destroy();
 
+	//Fechar conexoes
 	for(int t = 0; t< totalConnections; t++){
 		if(poll_list[t].fd != -1)
 			close(poll_list[t].fd);
