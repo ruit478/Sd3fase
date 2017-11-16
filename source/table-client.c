@@ -12,10 +12,11 @@
 */
 
 #include "network_client-private.h"
+#include "client_stub-private.h"
 int main(int argc, char **argv) {
-  struct server_t *server;
+  int result = 0;
   char input[81];
-  struct message_t *msg_out, *msg_resposta;
+  struct message_t *msg_out;
   char *option;
   char *split2;
   char *split3;
@@ -27,8 +28,10 @@ int main(int argc, char **argv) {
     return -1;
   }
   /* Usar network_connect para estabelcer ligação ao servidor */
-  server = network_connect(argv[1]);
-
+  struct rtables_t *rtable = rtables_bind(argv[1]);
+  if(rtable == NULL){
+    return -1;
+  }
   /* Fazer ciclo até que o utilizador resolva fazer "quit" */
   while (1) {
     printf(">>> "); // Mostrar a prompt para inserção de comando
@@ -67,42 +70,67 @@ int main(int argc, char **argv) {
     */
     /////////////////////Put///////////////////
     if (strcmp(option, "put") == 0) {
+      rtable->activeTable = atoi(split2);
       split3 = strtok(NULL, " ");  // Key
       split4 = strtok(NULL, "\0"); // data
       if (split2 == NULL || split3 == NULL || split4 == NULL) {
         printf("Nr inválido de argumentos");
       }
       struct data_t *dados = data_create2(strlen(split4), split4);
-
-      msg_out->table_num = (short)atoi(split2);
-      msg_out->opcode = OC_PUT;
-      msg_out->c_type = CT_ENTRY;
-      msg_out->content.entry = (struct entry_t *)malloc(sizeof(struct entry_t));
-      if (msg_out->content.entry == NULL) {
-        free_message(msg_out);
-        data_destroy(dados);
-        return -1;
-      }
-      msg_out->content.entry->key = strdup(split3);
-      msg_out->content.entry->value = data_dup(dados);
-
+      result = rtables_put(rtable,split3, dados);
       data_destroy(dados);
+    
+      if (result == -2)
+        printf("\nO servidor não se encontra disponivel. Saia da aplicacao usando o comando \"quit\"\n");
+
+      else if (result == -1)
+        printf("\nOcorreu um erro no lado do servidor, tente novamente!\n");
+  
+      else
+        printf("\nInseriu a chave \"%s\" com a data \"%s\"\n", split3, split4);
     }
 
     else if (strcmp(option, "get") == 0) {
+      rtable->activeTable = atoi(split2);
       split3 = strtok(NULL, "\0");
 
       if (split2 == NULL || split3 == NULL) {
         printf("Nr Inválido de argumentos");
       }
-
-      msg_out->table_num = (short)atoi(split2);
-      msg_out->opcode = OC_GET;
-      msg_out->c_type = CT_KEY;
-      msg_out->content.key = strdup(split3);
+      int i = 0;
+      char **allKeys;
+      if(strcmp(split3, "*") == 0){
+        allKeys = rtables_get_keys(rtable);
+        if(allKeys == NULL){
+          printf("\nNão há chaves\n");
+        }
+        else{
+          printf("Lista de chaves: ");
+          while(allKeys[i] != NULL){
+            printf("%s ", allKeys[i]);
+          i++;
+          }
+          printf("\n");
+          rtables_free_keys(allKeys);
+        }
+      }
+      else{
+        struct data_t *aux = rtables_get(rtable,split3);
+        if(aux == NULL){
+          printf("Nao ha chave");
+        }
+        else{
+          char* data = (char *) malloc(aux->datasize);
+          memcpy(data,aux->data,aux->datasize);
+          data[aux->datasize] = '\0';
+          printf("\nA data dessa key eh %s\n", data);
+          free(data);
+        }
+      }
     }
 
     else if (strcmp(option, "update") == 0) {
+      rtable->activeTable = atoi(split2);
       split3 = strtok(NULL, " ");  // Key
       split4 = strtok(NULL, "\0"); // Data
 
@@ -111,120 +139,69 @@ int main(int argc, char **argv) {
       }
       struct data_t *dados = data_create2(strlen(split4), split4);
 
-      msg_out->table_num = (short)atoi(split2);
-      msg_out->opcode = OC_UPDATE;
-      msg_out->c_type = CT_ENTRY;
-      msg_out->content.entry = (struct entry_t *)malloc(sizeof(struct entry_t));
-      if (msg_out->content.entry == NULL) {
-        free_message(msg_out);
-        data_destroy(dados);
-        return -1;
-      }
-      msg_out->content.entry->key = strdup(split3);
-      msg_out->content.entry->value = data_dup(dados);
+      result = rtables_update(rtable,split3, dados);
 
-      data_destroy(dados);
+      if (result == -2)
+        printf("\nO servidor não se encontra disponivel. Saia da aplicacao usando o comando \"quit\"\n");
+
+      else if (result == -1)
+        printf("\nOcorreu um erro no lado do servidor, tente novamente!\n");
+  
+      else {
+        printf("\nAtualizacao da chave \"%s\" com a data \"%s\"\n", split3, split4);
+        printf("Pode conferir com o comando get!\n");
+
+      }      
+      data_destroy(dados); 
     }
 
     else if (strcmp(option, "size") == 0) {
-      if (split2 == NULL) {
-        printf("Nr inválido de argumentos");
-      }
-      msg_out->table_num = (short)atoi(split2);
-      msg_out->opcode = OC_SIZE;
-      msg_out->c_type = CT_RESULT;
+      rtable->activeTable = atoi(split2);
+      result = rtables_size(rtable);
+
+      if (result == -2)
+        printf("\nO servidor não se encontra disponivel. Saia da aplicacao usando o comando \"quit\"\n");
+
+      else if (result == -1)
+        printf("\nOcorreu um erro no lado do servidor, tente novamente!\n");
+  
+      else
+        printf("\nA tabela tem %d elemento(s)!\n", result);
     }
 
     else if (strcmp(option, "collisions") == 0) {
-      if (split2 == NULL) {
-        printf("Nr inválido de argumentos");
-      }
-      msg_out->table_num = (short)atoi(split2);
-      msg_out->opcode = OC_COLLS;
-      msg_out->c_type = CT_RESULT;
-    } else if (strcmp(option, "ntables") == 0) {
-      msg_out->opcode = OC_NTABLES;
-      msg_out->c_type = CT_RESULT;
+      rtable->activeTable = atoi(split2);
+      result = rtables_collisions(rtable);
+
+      if (result == -2)
+        printf("\nO servidor não se encontra disponivel. Saia da aplicacao usando o comando \"quit\"\n");
+
+      else if (result == -1)
+        printf("\nOcorreu um erro no lado do servidor, tente novamente!\n");
+  
+      else
+        printf("\nA tabela tem %d colisoes!\n", result);
+    } 
+    else if (strcmp(option, "ntables") == 0) {
+      result = rtable->nrTables;
+
+      if (result == -2)
+        printf("\nO servidor não se encontra disponivel. Saia da aplicacao usando o comando \"quit\"\n");
+
+      else if (result == -1)
+        printf("\nOcorreu um erro no lado do servidor, tente novamente!\n");
+  
+      else
+        printf("\nA tabela tem %d tabela(s)!\n", result);      
     }
 
     else {
       printf("Essa opção não existe");
       return -1;
     }
-    //////////////////////RECEBER/////////////////////
-    msg_resposta = network_send_receive(server, msg_out);
-    // Resposta ao put
-    if (msg_resposta->opcode == OC_PUT + 1) {
-      if (msg_resposta->content.result == 0) {
-        printf("\nOperacao put com sucesso!");
-        int datasize = msg_out->content.entry->value->datasize;
-        char *data = malloc(datasize);
-        memcpy(data, msg_out->content.entry->value->data, datasize);
-        data[datasize + 1] = '\0';
-        printf("Inseriu a chave \"%s\" com a data \"%s\"\n",
-               msg_out->content.entry->key, data);
-        free(data);
-      }
-    }
 
-    // Resposta ao get
-    if (msg_resposta->opcode == OC_GET + 1) {
-      // Get individual em baixo
-      if (msg_resposta->c_type == CT_VALUE) {
-        printf("\nOperacao get feita com sucesso!");
-
-        if (msg_resposta->content.data->datasize == 0)
-          printf("\n a data da key eh NULL\n");
-
-        else {
-          int datasize = msg_resposta->content.entry->value->datasize;
-          char *data = malloc(datasize);
-          memcpy(data, msg_resposta->content.data->data, datasize);
-          data[datasize + 1] = '\0';
-          printf("\nA data dessa key eh : %s\n\n", data);
-          free(data);
-        }
-      }
-      if (msg_resposta->c_type == CT_KEYS) {
-        printf("\nAs chaves sao: ");
-        int j = 0;
-        while (msg_resposta->content.keys[j] != NULL) {
-          printf("%s ", msg_resposta->content.keys[j]);
-          j++;
-        }
-        printf("\n\n");
-      }
-    }
-    // PARA FUNCIONAR METER SPLIT2 NO ARG DO PRINTF
-    if (msg_resposta->opcode == OC_UPDATE + 1) {
-      printf("\nOperacao update feita com sucesso! Chave \"%s\"", split2);
-      printf("\nFaça get para ver alterações!\n");
-    }
-
-    if (msg_resposta->opcode == OC_SIZE + 1) {
-      printf("\nOperacao size feita com sucesso!\n");
-      printf("O numero de elementos na tabela eh: %d\n\n",
-             msg_resposta->content.result);
-    }
-
-    if (msg_resposta->opcode == OC_COLLS + 1) {
-      printf("\nOperacao collisions feita com sucesso!\n");
-      printf("O numero de colisoes na tabela eh: %d\n\n",
-             msg_resposta->content.result);
-    }
-
-    if (msg_resposta->opcode == OC_NTABLES + 1) {
-      printf("\nOperacao ntables feita com sucesso!\n");
-      printf("O numero de tabelas eh: %d\n\n", msg_resposta->content.result);
-    }
-
-    split2 = NULL;
-    split3 = NULL;
-
-    free_message(msg_out);
-    free_message(msg_resposta);
   } // Ciclo while Acaba Aqui
 
   printf("Cliente Terminado \n");
-  return network_close(server);
+  return rtables_unbind(rtable);
 }
