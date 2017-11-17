@@ -332,7 +332,7 @@ char **rtables_get_keys(struct rtables_t *rtables) {
 
 int rtables_get_ntables(struct rtables_t *rtables) {
   int rc = 0;
-
+  int result = 0;
   struct message_t *message =(struct message_t *)malloc(sizeof(struct message_t));
   if (message == NULL)
     return -1;
@@ -358,8 +358,7 @@ int rtables_get_ntables(struct rtables_t *rtables) {
     free_message(msg_resposta);
     return -1;
   }
-
-  int result = 0;
+  
   if (msg_resposta->opcode == OC_NTABLES + 1) {
     result = msg_resposta->content.result;
   }
