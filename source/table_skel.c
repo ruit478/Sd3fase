@@ -133,9 +133,11 @@ struct message_t *invoke(struct message_t *msg_in) {
     break;
 
   case OC_NTABLES:
+    msg_resposta->table_num = msg_in->table_num;
     msg_resposta->c_type = CT_RESULT;
     msg_resposta->content.result = nrTabelas;
-    msg_resposta->opcode = OC_NTABLES;
+    msg_resposta->opcode = OC_NTABLES + 1;
+    break;
   }
   return msg_resposta;
 }

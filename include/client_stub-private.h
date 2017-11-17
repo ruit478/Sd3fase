@@ -8,5 +8,5 @@ struct rtables_t {
   int nrTables;
   int activeTable; // Guardar a tabela ativa no momento
 };
-
+int rtables_get_ntables(struct rtables_t *rtables);
 #endif

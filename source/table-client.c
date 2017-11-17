@@ -183,7 +183,7 @@ int main(int argc, char **argv) {
         printf("\nA tabela tem %d colisoes!\n", result);
     } 
     else if (strcmp(option, "ntables") == 0) {
-      result = rtable->nrTables;
+      result = rtables_get_ntables(rtable);
 
       if (result == -2)
         printf("\nO servidor não se encontra disponivel. Saia da aplicacao usando o comando \"quit\"\n");

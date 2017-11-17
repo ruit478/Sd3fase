@@ -168,8 +168,7 @@ struct message_t *process_message(struct message_t *msg_pedido,
 */
 int network_receive_send(int sockfd) {
   char *message_resposta, *message_pedido;
-  int message_size, msg_size,
-      result; // message -> recebe do client, msg->dá ao client
+  int message_size, msg_size,result; // message -> recebe do client, msg->dá ao client
   struct message_t *msg_pedido, *msg_resposta;
 
   /* Verificar parâmetros de entrada */

@@ -197,7 +197,7 @@ int rtables_size(struct rtables_t *rtables) {
     free_message(message);
     return -1;
   }
-  
+  message->table_num = rtables->activeTable;
   message->opcode = OC_SIZE;
   message->c_type = CT_RESULT;
 
@@ -330,6 +330,41 @@ char **rtables_get_keys(struct rtables_t *rtables) {
   return NULL;
 }
 
+int rtables_get_ntables(struct rtables_t *rtables) {
+  int rc = 0;
+
+  struct message_t *message =(struct message_t *)malloc(sizeof(struct message_t));
+  if (message == NULL)
+    return -1;
+
+  message->table_num = rtables->activeTable;
+  message->opcode = OC_NTABLES;
+  message->c_type = CT_RESULT;
+
+  struct message_t *msg_resposta = network_send_receive(rtables->server, message);
+  if (msg_resposta == NULL) {
+    rc = reconnect(rtables);
+
+    if (rc == -1) {
+      free_message(message);
+      free_message(msg_resposta);
+      return -2;
+    } else
+      msg_resposta = network_send_receive(rtables->server, message);
+  }
+
+  if (msg_resposta->opcode == OC_RT_ERROR) {
+    free_message(message);
+    free_message(msg_resposta);
+    return -1;
+  }
+
+  int result = 0;
+  if (msg_resposta->opcode == OC_NTABLES + 1) {
+    result = msg_resposta->content.result;
+  }
+  return result;
+}
 void rtables_free_keys(char **keys) {
   if (keys != NULL) {
     int j = 0;
